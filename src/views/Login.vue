@@ -4,18 +4,20 @@
       <!-- 头部 -->
       <div class="header">
         <img src="@/assets/img/login_logo.png" alt />
-        <h4 class="title">黑马面面</h4>
+        <h4 class="title">面试管理</h4>
         <span class="line"></span>
         <h5 class="user_login">用户登录</h5>
       </div>
       <!-- 表单 -->
-      <el-form :model="form">
+      <!-- rules:表单 -->
+      <el-form :model="form" :rules="rules" ref="form">
         <!-- 手机号 -->
-        <el-form-item>
+        <el-form-item prop="phone">
           <el-input v-model="form.phone" placeholder="请输入手机号码" prefix-icon="el-icon-user"></el-input>
         </el-form-item>
         <!-- 密码 -->
-        <el-form-item>
+        <el-form-item prop="password">
+          <!-- prefix-icon:头部图标   show-password:是否显示密码切换 -->
           <el-input
             v-model="form.password"
             placeholder="请输入密码"
@@ -24,7 +26,7 @@
           ></el-input>
         </el-form-item>
         <!-- 验证码 -->
-        <el-form-item>
+        <el-form-item prop="code">
           <el-row>
             <!-- 验证码输入框 -->
             <el-col :span="16">
@@ -37,15 +39,16 @@
           </el-row>
         </el-form-item>
         <!-- 协议 -->
-        <el-form-item>
-          <el-checkbox class="xx">
+        <el-form-item prop="isPass">
+          <el-checkbox class="check" v-model="form.isPass">
             我已同意并阅读
             <el-link type="primary">用户协议</el-link>和
             <el-link type="primary">隐私条款</el-link>
           </el-checkbox>
         </el-form-item>
         <!-- 登录 -->
-        <el-button type="primary" class="btn">登录</el-button>
+        <!-- 全局校验 -->
+        <el-button type="primary" class="btn" @click="submit">登录</el-button>
         <br />
         <br />
         <!-- 注册 -->
@@ -65,9 +68,37 @@ export default {
       form: {
         phone: "",
         password: "",
-        code: ""
+        code: "",
+        isPass: ""
+      },
+      rules: {
+        phone: [
+          { required: true, message: "必填项", trigger: "blur" },
+          { min: 11, max: 11, message: "请输入11位手机号", trigger: "blur" }
+        ],
+        password: [
+          { required: true, message: "必填项", trigger: "blur" },
+          { min: 6, max: 12, message: "请输入6-12位密码", trigger: "blur" }
+        ],
+        code: [
+          { required: true, message: "必填项", trigger: "blur" },
+          { min: 4, max: 4, message: "请输入4位验证码", trigger: "blur" }
+        ],
+        isPass: [{ required: true, message: "必填项", trigger: "change" }]
       }
     };
+  },
+  methods: {
+    // 提交全局验证
+    submit() {
+      this.$refs.form.validate(result => {
+        if (result) {
+          this.$message.success("提交成功");
+        } else {
+          this.$message.error("提交失败");
+        }
+      });
+    }
   }
 };
 </script>
@@ -117,7 +148,7 @@ export default {
       width: 110px;
       height: 42px;
     }
-    .xx {
+    .check {
       height: 16px;
       font-size: 14px;
       font-family: Microsoft YaHei Regular, Microsoft YaHei Regular-Regular;
