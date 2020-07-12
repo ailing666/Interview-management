@@ -2,7 +2,7 @@
 import VueRouter from 'vue-router'
 import Vue from 'vue'
 
-import Login from '@/views/Login.vue';
+import Login from '@/views/login/Login.vue';
 
 // 注册
 Vue.use(VueRouter)

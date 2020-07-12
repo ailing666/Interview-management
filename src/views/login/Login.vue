@@ -34,7 +34,7 @@
             </el-col>
             <!-- 图片区 -->
             <el-col :span="8">
-              <img class="code_img" src="@/assets/img/code.png" alt />
+              <img class="code_img" @click="changeCode" :src="codeImgCode" alt />
             </el-col>
           </el-row>
         </el-form-item>
@@ -52,7 +52,9 @@
         <br />
         <br />
         <!-- 注册 -->
-        <el-button type="primary" class="btn">注册</el-button>
+        <el-button type="primary" class="btn" @click="showRegister">注册</el-button>
+        <!-- 导入子组件 -->
+        <Register ref="register"></Register>
       </el-form>
     </div>
     <div class="right">
@@ -62,9 +64,12 @@
 </template>
 
 <script>
+// 导入子组件
+import Register from "@/views/login/Register.vue";
 export default {
   data() {
     return {
+      codeImgCode: process.env.VUE_APP_URL + "/captcha?type=login",
       form: {
         phone: "",
         password: "",
@@ -98,8 +103,17 @@ export default {
           this.$message.error("提交失败");
         }
       });
+    },
+    changeCode() {
+      this.codeImgCode =
+        process.env.VUE_APP_URL + "/captcha?type=login&t=" + Date.now();
+    },
+    // 点击触发事件修改子组件的isShow为true
+    showRegister() {
+      this.$refs.register.isShow = true;
     }
-  }
+  },
+  components: { Register }
 };
 </script>
 
