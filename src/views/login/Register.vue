@@ -5,7 +5,7 @@
       <div slot="title" class="dialog_title">用户注册</div>
       <!-- 主体 -->
       <!-- 表单 -->
-      <el-form :model="form" label-width="80px" :rules="rules">
+      <el-form :model="form" label-width="80px" :rules="rules" ref="form">
         <el-form-item prop="avatar" label="头像">
           <!-- action:接口地址   show-file-list:是否显示文件列表 -->
           <el-upload
@@ -56,7 +56,7 @@
       <!-- 脚部 -->
       <div slot="footer">
         <el-button @click="isShow = false">取消</el-button>
-        <el-button type="primary">确认</el-button>
+        <el-button type="primary" @click="submit">确认</el-button>
       </div>
     </el-dialog>
   </div>
@@ -80,32 +80,42 @@ export default {
         rcode: "" //	短信验证码
       },
       rules: {
-        avatar: [{ required: true, message: "必填项", tirgger: "blur" }],
+        avatar: [{ required: true, message: "必填项", trigger: "change" }],
         username: [
-          { required: true, message: "必填项", tirgger: "blur" },
-          { min: 2, max: 8, message: "昵称长度为2-8", trigger: "blur" }
+          { required: true, message: "必填项", trigger: "change" },
+          { min: 2, max: 8, message: "昵称长度为2-8", trigger: "change" }
         ],
-        email: [{ required: true, message: "必填项", tirgger: "blur" }],
+        email: [{ required: true, message: "必填项", trigger: "change" }],
         phone: [
-          { required: true, message: "必填项", tirgger: "blur" },
-          { min: 11, max: 11, message: "请输入11位手机号", trigger: "blur" }
+          { required: true, message: "必填项", trigger: "change" },
+          { min: 11, max: 11, message: "请输入11位手机号", trigger: "change" }
         ],
         password: [
-          { required: true, message: "必填项", tirgger: "blur" },
-          { min: 6, max: 12, message: "请输入6-12位密码", trigger: "blur" }
+          { required: true, message: "必填项", trigger: "change" },
+          { min: 6, max: 12, message: "请输入6-12位密码", trigger: "change" }
         ],
         imgCode: [
-          { required: true, message: "必填项", tirgger: "blur" },
-          { min: 4, max: 4, message: "请输入4位验证码", trigger: "blur" }
+          { required: true, message: "必填项", trigger: "change" },
+          { min: 4, max: 4, message: "请输入4位验证码", trigger: "change" }
         ],
         rcode: [
-          { required: true, message: "必填项", tirgger: "blur" },
-          { min: 4, max: 4, message: "请输入4位验证码", trigger: "blur" }
+          { required: true, message: "必填项", trigger: "change" },
+          { min: 4, max: 4, message: "请输入4位验证码", trigger: "change" }
         ]
       }
     };
   },
   methods: {
+    // 全局验证
+    submit() {
+      this.$refs.form.validate(result => {
+        if (result) {
+          this.$message.success("提交成功");
+        } else {
+          this.$message.error("提交失败");
+        }
+      });
+    },
     // 点击图片,在图形码的接口后添加一个随机数改变图片
     changeImg() {
       this.codeImg =
@@ -116,6 +126,7 @@ export default {
       this.avatar = res.data.file_path;
       // 图片地址
       this.imageUrl = process.env.VUE_APP_URL + "/" + res.data.file_path;
+      this.$refs.form.validateField(["avatar"]);
     },
     // 图片读取后,调用接口前的回调函数
     beforeAvatarUpload(file) {
