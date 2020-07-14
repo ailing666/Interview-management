@@ -44,11 +44,14 @@
         </el-form-item>
         <el-form-item prop="rcode" label="验证码">
           <el-row>
-            <el-col :span="16">
+            <el-col :span="14">
               <el-input v-model="form.rcode"></el-input>
             </el-col>
-            <el-col :span="7" :offset="1">
-              <el-button class="btn">获取用户验证码</el-button>
+            <el-col :span="9" :offset="1">
+              <el-button class="btn" @click="getRcode" :disabled="time != 30">
+                获取用户验证码
+                <span v-if="time != 30">({{time}}秒)</span>
+              </el-button>
             </el-col>
           </el-row>
         </el-form-item>
@@ -63,13 +66,15 @@
 </template>
 
 <script>
+import { getRcode, register } from "@/api/login.js";
 export default {
   data() {
     return {
-      isShow: false,
+      isShow: false, //是否显示对话框
       uploadUrl: process.env.VUE_APP_URL + "/uploads", //接口地址
-      codeImg: process.env.VUE_APP_URL + "/captcha?type=sendsms",
+      codeImg: process.env.VUE_APP_URL + "/captcha?type=sendsms", //图形验证码
       imageUrl: "", //上传头像接口返回的图片地址
+      time: 30, //点击获取验证码按钮倒计时长
       form: {
         avatar: "", //	头像地址
         username: "", //	用户名
@@ -85,10 +90,28 @@ export default {
           { required: true, message: "必填项", trigger: "change" },
           { min: 2, max: 8, message: "昵称长度为2-8", trigger: "change" }
         ],
-        email: [{ required: true, message: "必填项", trigger: "change" }],
+        email: [
+          { required: true, message: "必填项", trigger: "change" },
+          {
+            validator: (rule, value, callback) => {
+              let _reg = /\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*/;
+              _reg.test(value)
+                ? callback()
+                : callback(new Error("邮箱格式错误"));
+            }
+          }
+        ],
         phone: [
           { required: true, message: "必填项", trigger: "change" },
-          { min: 11, max: 11, message: "请输入11位手机号", trigger: "change" }
+          { min: 11, max: 11, message: "请输入11位手机号", trigger: "change" },
+          {
+            validator: (rules, value, callback) => {
+              let _reg = /^(0|86|17951)?(13[0-9]|15[012356789]|166|17[3678]|18[0-9]|14[57])[0-9]{8}$/;
+              _reg.test(value)
+                ? callback()
+                : callback(new Error("手机号格式错误"));
+            }
+          }
         ],
         password: [
           { required: true, message: "必填项", trigger: "change" },
@@ -105,11 +128,57 @@ export default {
       }
     };
   },
+  watch: {
+    isShow(newVal) {
+      if (newVal == false) {
+        // 将绑定prop属性的表单项重置
+        this.$refs.form.resetFields();
+        this.imageUrl = "";
+      }
+    }
+  },
   methods: {
+    // 获取短信验证码
+    getRcode() {
+      let num = 0;
+      // 先局部校验图形码和手机
+      this.$refs.form.validateField(["imgCode", "phone"], errorMessage => {
+        // 当没用错时,errorMessage为空
+        if (errorMessage == "") {
+          num++;
+        }
+      });
+      // 当num=2时,说明两次验证都没问题,在进行下面操作
+      if (num === 2) {
+        // time倒计时
+        this.time--;
+        let timer = setInterval(() => {
+          this.time--;
+          if (this.time < 0) {
+            clearInterval(timer);
+            this.time = 30;
+          }
+        }, 1000);
+
+        // 调用获取短信的方法,将图形码和手机号作为参数
+        getRcode({ code: this.form.imgCode, phone: this.form.phone }).then(
+          res => {
+            this.$message.success(res.data.captcha + "");
+          }
+        );
+      } else {
+        this.$message.error("信息有误,请重新输入");
+      }
+    },
     // 全局验证
     submit() {
       this.$refs.form.validate(result => {
         if (result) {
+          // 调用register接口,将form对象作为参数传入
+          register(this.form).then(() => {
+            // 将对话框隐藏
+            this.isShow = false;
+          });
           this.$message.success("提交成功");
         } else {
           this.$message.error("提交失败");
@@ -123,7 +192,7 @@ export default {
     },
     // 图片上传成功后的回调函数
     handleAvatarSuccess(res) {
-      this.avatar = res.data.file_path;
+      this.form.avatar = res.data.file_path;
       // 图片地址
       this.imageUrl = process.env.VUE_APP_URL + "/" + res.data.file_path;
       this.$refs.form.validateField(["avatar"]);
