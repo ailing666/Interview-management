@@ -17,3 +17,12 @@ export function register(data) {
     method: 'post'
   })
 }
+
+// 用户登录接口
+export function userLogin(data) {
+  return _fetch({
+    url: '/login',
+    data,
+    method: 'post'
+  })
+}

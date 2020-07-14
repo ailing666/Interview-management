@@ -3,6 +3,7 @@ import VueRouter from 'vue-router'
 import Vue from 'vue'
 
 import Login from '@/views/login/Login.vue';
+import Layout from '@/views/layout/layout.vue';
 
 // 注册
 Vue.use(VueRouter)
@@ -17,7 +18,8 @@ VueRouter.prototype.push = function push(to) {
 const router = new VueRouter({
   routes: [
     { path: '/', redirect: 'Login' },
-    { path: '/Login', component: Login }
+    { path: '/Login', component: Login },
+    { path: '/layout', component: Layout }
   ]
 })
 

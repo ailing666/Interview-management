@@ -66,6 +66,7 @@
 <script>
 // 导入子组件
 import Register from "@/views/login/Register.vue";
+import { userLogin } from "@/api/login.js";
 export default {
   data() {
     return {
@@ -74,7 +75,7 @@ export default {
         phone: "",
         password: "",
         code: "",
-        isPass: ""
+        isPass: false
       },
       rules: {
         phone: [
@@ -89,7 +90,13 @@ export default {
           { required: true, message: "必填项", trigger: "blur" },
           { min: 4, max: 4, message: "请输入4位验证码", trigger: "blur" }
         ],
-        isPass: [{ required: true, message: "必填项", trigger: "change" }]
+        isPass: [
+          {
+            validator: (rule, value, callback) => {
+              value ? callback() : callback(new Error("请勾选用户协议"));
+            }
+          }
+        ]
       }
     };
   },
@@ -98,6 +105,9 @@ export default {
     submit() {
       this.$refs.form.validate(result => {
         if (result) {
+          userLogin(this.from).then(res => {
+            window.console.log(res);
+          });
           this.$message.success("提交成功");
         } else {
           this.$message.error("提交失败");
