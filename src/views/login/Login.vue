@@ -67,6 +67,7 @@
 // 导入子组件
 import Register from "@/views/login/Register.vue";
 import { userLogin } from "@/api/login.js";
+import { saveLocal } from "@/utils/local.js";
 export default {
   data() {
     return {
@@ -105,8 +106,12 @@ export default {
     submit() {
       this.$refs.form.validate(result => {
         if (result) {
-          userLogin(this.from).then(res => {
+          userLogin(this.form).then(res => {
             window.console.log(res);
+            // 储存token值
+            saveLocal(res.data.token);
+            // 跳转到layout页
+            this.$router.push("/layout");
           });
           this.$message.success("提交成功");
         } else {
